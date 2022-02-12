@@ -57,12 +57,4 @@ def chat(chat_id):
 
 # -------------------------------- API ROUTES ----------------------------------
 
-# TODO: Create a route
-
-@app.route('/api/authenticate', methods=['POST'])
-def authenticate():
-    # TODO: check if the request body contains a chat_id and the correct magic_key for that chat
-    # TODO: also send a username
-    return {"session_token": "as3215jhkg231hjgkl4123"}
-
-# TODO: Route to get messages in a chat and to post new ones to that chat. Requires a valid session token for that chat
+# TODO: Create the API
