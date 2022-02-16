@@ -7,34 +7,41 @@ from functools import wraps
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-# sample_chats = {
-#     1: {
-#         "authorized_users": {
-#             "as3215jhkg231hjgkl4123": {"username": "Alice", "expires": "2020-02-15T20:53:15Z"},
-#             "session_token_1": {"username": "Bob", "expires": "2020-02-15T20:57:22Z"}
-#         },
-#         "magic_key": "some_really_long_key_value"
+# You can store data on your server in whatever structure is most convenient,
+# either holding it in memory on your server or in a sqlite database.
+# You may use the sample structures below or create your own.
+
+# users is a collection of authorized users with their usernames API requests
+# include an auth_key, so we want that to be the key on our dictionary so we can
+# efficiently get the username from an auth_key, and so that multiple users with
+# their own auth_keys can have the same display name.
+# { auth_key: username }
+# example: {1435275768: "Alice", 5769853333: "Bob"}
+users = {}
+
+# chats is a collection that contains the chats, keyed by their chat_id, where
+# each chat object contains a collection of the users that are authorized to use
+# it (identified by their auth_key), and a list of current chat messasges.
+# example: chats = {
+#     0: {
+#         "magic_passphrase": "0123456789",
+#         "authorized_users": {8959659785, 1435275768, 5769853333, ... auth_keyN},
 #         "messages": [
-#             {"username": "Alice", "body": "Hi Bob!"},
-#             {"username": "Bob", "body": "Hi Alice!"},
-#             {"username": "Alice", "body": "Knock knock"},
-#             {"username": "Bob", "body": "Who's there?"},
-#         ]
-#     }
+#               {"user": 1435275768, "text": "hi"}
+#               {"user": 5769853333, "text": "hello"}
+#               {"user": 1435275768, "text": "knock knock"}
+#               {"user": 5769853333, "text": "whos there"}
+#          ]
+#     },
+#     1: ...
 # }
 chats = {}
 
-def newChat(host, session_token):
-    authorized_users = dict([
-        (session_token, dict([
-            ("username", host),
-            ("expires", datetime.utcnow() + timedelta(hours=6))
-        ]))
-    ])
-    magic_key = ''.join(random.choices(string.ascii_lowercase + string.digits, k=40))
+def newChat(host_auth_key):
+    magic_passphrase = ''.join(random.choices(string.ascii_lowercase + string.digits, k=40))
 
     return dict([
-        ("authorized_users", authorized_users),
+        ("authorized_users", set(host_auth_key)),
         ("magic_key", magic_key),
         ("messages", [])
     ])
@@ -50,10 +57,8 @@ def auth():
 
 @app.route('/chat/<int:chat_id>')
 def chat(chat_id):
-    invite_link = "some_cool_invite_link"
     return render_template('chat.html',
-            chat_id=chat_id,
-            invite_link=invite_link)
+            chat_id=chat_id)
 
 # -------------------------------- API ROUTES ----------------------------------
 
