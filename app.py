@@ -42,7 +42,7 @@ def newChat(host_auth_key):
 
     return dict([
         ("authorized_users", set(host_auth_key)),
-        ("magic_key", magic_key),
+        ("magic_key", magic_passphrase),
         ("messages", [])
     ])
 
