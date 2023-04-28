@@ -27,12 +27,9 @@ def close_connection(exception):
 
 def query_db(query, args=(), one=False):
     db = get_db()
-    cursor = db.execute(query, args)
-    print("query_db")
-    print(cursor)
-    rows = cursor.fetchall()
-    print(rows)
-    db.commit()
+    cursor = db.execute(query, args);
+    rows = cursor.fetchall();
+    db.commit();
     cursor.close()
     if rows:
         if one: 
@@ -54,7 +51,7 @@ def get_user_from_cookie(request):
     user_id = request.cookies.get('user_id')
     password = request.cookies.get('user_password')
     if user_id and password:
-        return query_db('select * from users where id = ? and password = ?', [user_id, password], one=True)
+        return query_db('select id, name, password, api_key from users where id = ? and password = ?', [user_id, password], one=True)
     return None
 
 def render_with_error_handling(template, **kwargs):
@@ -100,11 +97,6 @@ def signup():
     
     if request.method == 'POST':
         u = new_user()
-        print("u")
-        print(u)
-        for key in u.keys():
-            print(f'{key}: {u[key]}')
-
         resp = make_response(render_with_error_handling('signup.html', user=u))
         resp.set_cookie('user_id', str(u['id']))
         resp.set_cookie('user_password', u['password'])
@@ -118,18 +110,22 @@ def login():
     user = get_user_from_cookie(request)
 
     if user:
+        print("found user by cookie")
         return redirect('/')
     
     if request.method == 'POST':
-        name = request.form['name']
-        password = request.form['name']
+        name = request.form['username']
+        password = request.form['password']
         u = query_db('select * from users where name = ? and password = ?', [name, password], one=True)
-        if user:
-            resp = make_response(redirect("/"))
-            resp.set_cookie('user_id', u.id)
-            resp.set_cookie('user_password', u.password)
-            return resp
 
+        if u:
+            resp = make_response(redirect("/"))
+            resp.set_cookie('user_id', str(u['id']))
+            resp.set_cookie('user_password', u['password'])
+            return resp
+        else:
+            print("couldn't find that user")
+            return render_with_error_handling('login.html', failed=True)
     return render_with_error_handling('login.html', failed=True)   
 
 @app.route('/logout')
@@ -152,9 +148,8 @@ def room(room_id):
 
 # POST to change the user's name
 @app.route('/api/user/name')
-def update_username() {
+def update_username():
     return {}, 403
-}
 
 # POST to change the user's password
 
@@ -163,11 +158,3 @@ def update_username() {
 # GET to get all the messages in a room
 
 # POST to post a new message to a room
-
-# Change username
-
-# Change room name
-
-# Get messages in a room
-
-# Post a message in a room
