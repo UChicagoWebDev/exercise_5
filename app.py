@@ -144,7 +144,7 @@ def login():
     
     if request.method == 'POST':
         name = request.form['name']
-        password = request.form['name']
+        password = request.form['password']
         u = query_db('select * from users where name = ? and password = ?', [name, password], one=True)
         if user:
             resp = make_response(redirect("/"))
