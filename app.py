@@ -54,18 +54,18 @@ def query_db(query, args=(), one=False):
 def new_user():
     name = "Unnamed User #" + ''.join(random.choices(string.digits, k=6))
     password = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    cookie = ''.join(random.choices(string.ascii_lowercase + string.digits, k=40))
     api_key = ''.join(random.choices(string.ascii_lowercase + string.digits, k=40))
-    u = query_db('insert into users (name, password, api_key) ' + 
-        'values (?, ?, ?) returning id, name, password, api_key',
-        (name, password, api_key),
+    u = query_db('insert into users (name, password, cookie, api_key) ' + 
+        'values (?, ?, ?, ?) returning id, name, password, cookie, api_key',
+        (name, password, cookie, api_key),
         one=True)
     return u
 
 def get_user_from_cookie(request):
-    user_id = request.cookies.get('user_id')
-    password = request.cookies.get('user_password')
-    if user_id and password:
-        return query_db('select * from users where id = ? and password = ?', [user_id, password], one=True)
+    cookie = request.cookies.get('watch_party_cookie')
+    if cookie:
+        return query_db('select * from users where cookie = ?', [cookie], one=True)
     return None
 
 def render_with_error_handling(template, **kwargs):
@@ -118,8 +118,7 @@ def signup():
             print(f'{key}: {u[key]}')
 
         resp = redirect('/profile')
-        resp.set_cookie('user_id', str(u['id']))
-        resp.set_cookie('user_password', u['password'])
+        resp.set_cookie('watch_party_cookie', str(u['cookie']))
         return resp
     
     return redirect('/login')
@@ -157,8 +156,7 @@ def login():
 @app.route('/logout')
 def logout():
     resp = make_response(redirect('/'))
-    resp.set_cookie('user_id', '')
-    resp.set_cookie('user_password', '')
+    resp.set_cookie('watch_party_cookie', '')
     return resp
 
 @app.route('/rooms/<int:room_id>')
