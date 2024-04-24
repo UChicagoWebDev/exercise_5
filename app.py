@@ -142,13 +142,12 @@ def login():
         return redirect('/')
     
     if request.method == 'POST':
-        name = request.form['name']
+        name = request.form['username']
         password = request.form['password']
         u = query_db('select * from users where name = ? and password = ?', [name, password], one=True)
         if u:
             resp = make_response(redirect("/"))
-            resp.set_cookie('user_id', u.id)
-            resp.set_cookie('user_password', u.password)
+            resp.set_cookie('watch_party_cookie', u["cookie"])
             return resp
 
     return render_with_error_handling('login.html', failed=True)   
