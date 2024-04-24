@@ -145,7 +145,7 @@ def login():
         name = request.form['name']
         password = request.form['password']
         u = query_db('select * from users where name = ? and password = ?', [name, password], one=True)
-        if user:
+        if u:
             resp = make_response(redirect("/"))
             resp.set_cookie('user_id', u.id)
             resp.set_cookie('user_password', u.password)
